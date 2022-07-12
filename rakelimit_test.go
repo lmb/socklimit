@@ -40,12 +40,6 @@ func TestLoad(t *testing.T) {
 	})
 }
 
-const floatBits = 32
-
-type FixedPointTuple struct {
-	k, v uint64
-}
-
 /* TestBPFFloatToFixedPoint tests the convesion of integers/floats to fixed-point on the
 userspace & the bpf side to ensure both convert it in the same way */
 func TestBPFFloatToFixedPoint(t *testing.T) {

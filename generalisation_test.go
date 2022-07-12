@@ -1,7 +1,6 @@
 package socklimit
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"net"
@@ -205,7 +204,7 @@ func randomIP(rng *rand.Rand, prevIP net.IP, template net.IP) net.IP {
 	copy(ip, template)
 
 	rand.Read(ip[len(template):])
-	for bytes.Equal([]byte(prevIP), []byte(ip)) {
+	for ip.Equal(prevIP) {
 		rand.Read(ip[len(template):])
 	}
 
