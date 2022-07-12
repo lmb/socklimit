@@ -89,7 +89,7 @@ func rewriteConstant(spec *ebpf.CollectionSpec, symbol string, value uint64) err
 	for name, prog := range spec.Programs {
 		for i := range prog.Instructions {
 			ins := &prog.Instructions[i]
-			if ins.Reference != symbol {
+			if ins.Reference() != symbol {
 				continue
 			}
 

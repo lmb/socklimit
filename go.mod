@@ -3,7 +3,7 @@ module lmb.io/socklimit
 go 1.18
 
 require (
-	github.com/cilium/ebpf v0.5.1-0.20210527163130-29f67e0a7450
+	github.com/cilium/ebpf v0.9.1-0.20220712091325-f4e40e43a052
 	github.com/google/gopacket v1.1.18
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
+	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34
 )
