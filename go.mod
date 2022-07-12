@@ -1,6 +1,6 @@
 module lmb.io/socklimit
 
-go 1.14
+go 1.18
 
 require (
 	github.com/cilium/ebpf v0.5.1-0.20210527163130-29f67e0a7450
