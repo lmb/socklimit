@@ -1,4 +1,4 @@
-package rakelimit
+package socklimit
 
 import (
 	"bytes"

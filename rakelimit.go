@@ -1,4 +1,4 @@
-package rakelimit
+package socklimit
 
 import (
 	"errors"
@@ -12,15 +12,15 @@ import (
 
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc clang-12 rake ./src/rakelimit.c -- -I./include -nostdinc -Os
 
-// Rakelimit holds an instance of a ratelimiter that can be applied on a socket
-type Rakelimit struct {
+// Limiter holds an instance of a ratelimiter that can be applied on a socket
+type Limiter struct {
 	domain     int
 	program    *ebpf.Program
 	bpfObjects *rakeObjects
 }
 
 // New creates a new Rakelimit instance based on the specified ppsLimit
-func New(conn syscall.Conn, ppsLimit uint32) (*Rakelimit, error) {
+func New(conn syscall.Conn, ppsLimit uint32) (*Limiter, error) {
 	// set ratelimit
 	spec, err := loadRake()
 	if err != nil {
@@ -76,11 +76,11 @@ func New(conn syscall.Conn, ppsLimit uint32) (*Rakelimit, error) {
 		return nil, opErr
 	}
 
-	return &Rakelimit{domain, prog, &objs}, nil
+	return &Limiter{domain, prog, &objs}, nil
 }
 
 // Close cleans up resources occupied and should be called when finished using the structure
-func (rl *Rakelimit) Close() error {
+func (rl *Limiter) Close() error {
 	return rl.bpfObjects.Close()
 }
 

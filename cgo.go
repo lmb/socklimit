@@ -1,6 +1,7 @@
+//go:build cgo && cgotest
 // +build cgo,cgotest
 
-package rakelimit
+package socklimit
 
 // #cgo CFLAGS: -Iinclude
 // #include "stdlib.h"

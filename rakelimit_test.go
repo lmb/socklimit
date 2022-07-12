@@ -1,4 +1,4 @@
-package rakelimit
+package socklimit
 
 import (
 	"math"
@@ -212,7 +212,7 @@ func mustSerializeLayers(tb testing.TB, layers ...gopacket.SerializableLayer) []
 }
 
 type testRakelimit struct {
-	*Rakelimit
+	*Limiter
 	testProgram *ebpf.Program
 	args        *ebpf.Map
 	conn        *net.UDPConn

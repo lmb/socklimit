@@ -1,4 +1,4 @@
-module github.com/cloudflare/rakelimit
+module lmb.io/socklimit
 
 go 1.14
 

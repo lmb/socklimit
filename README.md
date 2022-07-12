@@ -1,12 +1,15 @@
-# Rakelimit
+# socklimit
 
 A multi-dimensional fair-share rate limiter in BPF, designed for UDP.
 The algorithm is based on Hierarchical Heavy Hitters, and ensures that no party can exceed
-a certain rate of packets. For more information please take a look at our [blog post](https://blog.cloudflare.com/building-rakelimit/).
+a certain rate of packets.
+
+This package is a fork of [rakelimit](https://github.com/cloudflare/rakelimit).
+For more information please take a look at the [blog post](https://blog.cloudflare.com/building-rakelimit/).
 
 ## Usage
 
-To activate rakelimit create a new instance and provide a file descriptor and a rate limit that you think the
+Create a new instance and provide a file descriptor and a rate limit that you think the
 service in question won't be able to handle anymore:
 
 ```go
@@ -19,8 +22,8 @@ udpConn := conn.(*net.UDPConn)
 
 // We don't want to allow anyone to use more than 128 packets per second
 ppsPerSecond := 128
-rake, err := New(udpConn, ppsPerSecond)
-defer rake.Close()
+limiter, err := socklimit.New(udpConn, ppsPerSecond)
+defer limiter.Close()
 // rate limiter stays active even after closing
 ```
 
