@@ -22,6 +22,11 @@ func TestMain(m *testing.M) {
 	flag.Int64Var(&seed, "seed", 0, "seed for the random number generator")
 	flag.Parse()
 
+	if err := changePrivileges(); err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to change privileges:", err)
+		os.Exit(1)
+	}
+
 	if seed == 0 {
 		seed = time.Now().UnixNano()
 	}

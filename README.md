@@ -31,15 +31,14 @@ That's all! The library now enforces rate limits on incoming packets, and it hap
 
 ## Requirements
 
-The library should be go-gettable, and has been tested on Linux 5.11.
+The library should be go-gettable, and has been tested on Linux 5.11. It requires
+that the process using the library has `CAP_BPF`.
 
 You may have to increase optmem_max depending on your distribution:
 
 ```
 sudo sysctl -w net.core.optmem_max=22528
 ```
-
-You will need a `clang-12` binary if you want to recompile the filter. Simply run `go generate` in the root of the project.
 
 ## Limitations
 - IPv6 doesn't support options

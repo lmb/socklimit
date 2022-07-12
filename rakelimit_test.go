@@ -1,6 +1,7 @@
 package socklimit
 
 import (
+	"fmt"
 	"math"
 	"net"
 	"testing"
@@ -10,6 +11,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"golang.org/x/sys/unix"
+	"kernel.org/pub/linux/libs/security/libcap/cap"
 )
 
 func TestLoad(t *testing.T) {
@@ -278,4 +280,30 @@ func (trl *testRakelimit) rateExceededOnLevel(tb testing.TB) uint32 {
 	}
 
 	return uint32(level)
+}
+
+func changePrivileges() error {
+	const secbits = cap.SecbitNoRoot | cap.SecbitNoSetUIDFixup
+
+	if c, err := cap.GetProc().Cf(cap.NewSet()); err != nil {
+		return err
+	} else if c == 0 {
+		return fmt.Errorf("missing privileges (running as root?)")
+	}
+
+	if err := secbits.Set(); err != nil {
+		return fmt.Errorf("failed to set securebits: %s", err.Error())
+	}
+
+	set := cap.GetProc()
+	if err := set.ClearFlag(cap.Effective); err != nil {
+		return err
+	}
+
+	return set.SetFlag(cap.Effective, true, []cap.Value{
+		// Allow access to bpf() when unprivileged BPF is disabled.
+		cap.BPF,
+		// Allow  the Go rest runner to write out code coverage.
+		cap.DAC_OVERRIDE,
+	}...)
 }
