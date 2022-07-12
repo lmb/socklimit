@@ -19,12 +19,22 @@ type Limiter struct {
 	bpfObjects *rakeObjects
 }
 
+// These constants must match their CM_ counterparts in the BPF.
+const (
+	cmMaxRate = (1 << 24) - 1
+	cmMaxTs   = (1 << 40) - 1
+)
+
 // New creates a new Rakelimit instance based on the specified ppsLimit
 func New(conn syscall.Conn, ppsLimit uint32) (*Limiter, error) {
 	// set ratelimit
 	spec, err := loadRake()
 	if err != nil {
 		return nil, fmt.Errorf("get elf spec: %v", err)
+	}
+
+	if ppsLimit > cmMaxRate {
+		return nil, fmt.Errorf("rate %d exceeds the maximum rate %d", ppsLimit, cmMaxRate)
 	}
 
 	if err := rewriteConstant(spec, "LIMIT", uint64(ppsLimit)); err != nil {

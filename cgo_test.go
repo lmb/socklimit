@@ -33,7 +33,7 @@ func TestEstimateRate(t *testing.T) {
 	const E = 0.01
 
 	for _, rate := range []uint32{
-		1, 1000, 9999, 10_000_000,
+		1, 1000, 9999, cmMaxRate,
 	} {
 		interval := time.Second / time.Duration(rate)
 		rate = uint32(time.Second / interval)

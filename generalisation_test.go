@@ -140,7 +140,6 @@ func generatePackets(duration time.Duration, specs ...packetSpec) []packet {
 				spec,
 			})
 		}
-
 	}
 
 	sort.Slice(steps, func(i, j int) bool {
@@ -224,7 +223,7 @@ func ipTemplate(ip net.IP, ipLen int) net.IP {
 
 func TestRate(t *testing.T) {
 	const (
-		duration = 10 * time.Second
+		duration = 1000 * time.Second
 		limit    = 100
 	)
 
@@ -241,7 +240,7 @@ func TestRate(t *testing.T) {
 	})
 
 	var accepted int
-	for i, packet := range packets {
+	for _, packet := range packets {
 		rake.updateTime(t, packet.received)
 
 		verdict, _, err := rake.testProgram.Test(packet.marshal())
@@ -249,7 +248,7 @@ func TestRate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if level := rake.rateExceededOnLevel(t); i > 0 && level != 0 {
+		if level := rake.rateExceededOnLevel(t); verdict == 0 && level != 0 {
 			t.Fatalf("Packet is matched on level %d instead of 0", level)
 		}
 
@@ -261,6 +260,38 @@ func TestRate(t *testing.T) {
 	acceptedRate := float64(accepted) / duration.Seconds()
 	if acceptedRate < limit*0.95 || acceptedRate > limit*1.05 {
 		t.Errorf("Didn't match desired rate of %d: %.2f pps accepted", limit, acceptedRate)
+	}
+}
+
+func TestTimestampOverflow(t *testing.T) {
+	e := element{
+		net.IPv4(1, 2, 3, 4),
+		1234,
+		net.IPv4(5, 4, 3, 2),
+		9999,
+	}
+	p := e.marshal()
+
+	rake := mustNew(t, "127.0.0.1:0", 100)
+
+	rake.updateTime(t, 1)
+	verdict, _, err := rake.testProgram.Test(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if verdict == 0 {
+		t.Fatal("Dropped first packet")
+	}
+
+	rake.updateTime(t, 2+cmMaxTs+1)
+	verdict, _, err = rake.testProgram.Test(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if verdict == 0 {
+		t.Fatal("Dropped second packet on level", rake.rateExceededOnLevel(t))
 	}
 }
 

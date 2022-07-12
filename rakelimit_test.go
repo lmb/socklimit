@@ -3,6 +3,7 @@ package socklimit
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"net"
 	"testing"
 	"time"
@@ -134,6 +135,7 @@ type testRakelimit struct {
 	testProgram *ebpf.Program
 	args        *ebpf.Map
 	conn        *net.UDPConn
+	timeOffset  uint64
 }
 
 const (
@@ -168,17 +170,16 @@ func mustNew(tb testing.TB, addr string, limit uint32) *testRakelimit {
 		tb.Fatal("Can't update rand:", err)
 	}
 
-	return &testRakelimit{rake, prog, args, udp}
+	rng := rand.New(rand.NewSource(seed))
+	offset := uint64(rng.Int63n(cmMaxTs/2) + cmMaxTs/2)
+
+	return &testRakelimit{rake, prog, args, udp, offset}
 }
 
 func (trl *testRakelimit) updateTime(tb testing.TB, now uint64) {
 	tb.Helper()
 
-	if now < math.MaxUint64 {
-		// Make sure we never use a zero time, since the ewma code
-		// assumes that zero means uninitialised.
-		now++
-	}
+	now += trl.timeOffset
 
 	if err := trl.args.Put(timeArgKey, now); err != nil {
 		tb.Error("Can't update time:", err)

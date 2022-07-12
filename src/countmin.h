@@ -36,12 +36,20 @@
 #define HASHFN_N 2
 #define COLUMNS 512
 
+#define CM_RATE_BITS (24) // aka 16m pps
+#define CM_TS_BITS (64 - CM_RATE_BITS)
+
+#define CM_MAX_RATE ((1ull << CM_RATE_BITS) - 1)
+#define CM_MAX_TS ((1ull << CM_TS_BITS) - 1)
+
 _Static_assert((COLUMNS & (COLUMNS - 1)) == 0, "COLUMNS must be a power of two");
 
 struct cm_value {
-	__u32 value;
-	__u64 ts;
+	__u32 rate : CM_RATE_BITS;
+	__u64 ts : CM_TS_BITS;
 };
+
+_Static_assert(sizeof(struct cm_value) == sizeof(__u64), "struct cm_value doesn't fit 64 bit word");
 
 struct cm_hash {
 	__u32 values[HASHFN_N];
@@ -55,18 +63,26 @@ struct countmin {
 static __u32 __attribute__ ((noinline)) cm_add_and_query(struct countmin *cm, __u64 now, const struct cm_hash *h)
 {
 	__u32 min = -1;
+
+	now &= CM_MAX_TS;
+
 #pragma clang loop unroll(full)
 	for (int i = 0; i < ARRAY_SIZE(cm->values); i++) {
-		__u32 target_idx       = h->values[i] & (ARRAY_SIZE(cm->values[i]) - 1);
-		struct cm_value *value = &cm->values[i][target_idx];
-		__u32 rate             = estimate_rate(value->value, value->ts, now);
+		__u32 target_idx      = h->values[i] & (ARRAY_SIZE(cm->values[i]) - 1);
+		struct cm_value value = READ_ONCE(cm->values[i][target_idx]);
+		__u32 rate            = estimate_rate(value.rate, value.ts, now);
+
+		if (rate > CM_MAX_RATE) {
+			rate = CM_MAX_RATE;
+		}
 
 		if (rate < min) {
 			min = rate;
 		}
 
-		value->value = rate;
-		value->ts    = now;
+		value.rate = rate;
+		value.ts   = now;
+		WRITE_ONCE(cm->values[i][target_idx], value);
 	}
 	return min;
 }

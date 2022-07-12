@@ -22,4 +22,7 @@ unsigned long long load_byte(void *skb, unsigned long long off) asm("llvm.bpf.lo
 unsigned long long load_half(void *skb, unsigned long long off) asm("llvm.bpf.load.half");
 unsigned long long load_word(void *skb, unsigned long long off) asm("llvm.bpf.load.word");
 
-#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+
+#define READ_ONCE(X) (*(volatile typeof(X) *)&X)
+#define WRITE_ONCE(X, V) (*(volatile typeof(X) *)&X) = (V)
