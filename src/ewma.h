@@ -8,7 +8,7 @@
 // estimate_avg_rate takes a previous rate and a duration that elapsed
 // since this rate has been determined, and estimates based on these and
 // WINDOW the current rate in packets per second.
-static __u32 FORCE_INLINE estimate_rate(__u32 old_rate, __u64 old_ts, __u64 now)
+static __u32 estimate_rate(__u32 old_rate, __u64 old_ts, __u64 now)
 {
 	// The window after which old observations are discarded.
 	// Chosen to be a power of two so that division can be done

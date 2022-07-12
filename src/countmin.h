@@ -52,7 +52,7 @@ struct countmin {
 };
 
 // add element and determine count
-static __u32 FORCE_INLINE cm_add_and_query(struct countmin *cm, __u64 now, const struct cm_hash *h)
+static __u32 cm_add_and_query(struct countmin *cm, __u64 now, const struct cm_hash *h)
 {
 	__u32 min = -1;
 #pragma clang loop unroll(full)
