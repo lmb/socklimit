@@ -10,7 +10,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc clang-12 rake ./src/rakelimit.c -- -I./include -nostdinc -Os
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc clang-14 rake ./src/rakelimit.c -- -I./include -nostdinc -Os
 
 // Limiter holds an instance of a ratelimiter that can be applied on a socket
 type Limiter struct {
