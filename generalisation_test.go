@@ -337,6 +337,7 @@ func TestGeneralisations(t *testing.T) {
 				element: gen.element,
 			})
 
+			didDrop := false
 			for i, packet := range packets {
 				rake.updateTime(t, packet.received)
 
@@ -346,18 +347,14 @@ func TestGeneralisations(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				if i == 0 {
-					if verdict == 0 {
-						t.Fatal("First packet shouldn't be dropped")
+				if verdict != 0 {
+					if didDrop {
+						t.Fatalf("Accepted packet #%d", i)
 					}
-
 					continue
 				}
 
-				if verdict > 0 {
-					t.Fatalf("Accepted packet #%d", i)
-				}
-
+				didDrop = true
 				level := rake.rateExceededOnLevel(t)
 				if level != gen.level {
 					t.Fatalf("Packet #%d was dropped on level %d instead of %d", i, level, gen.level)

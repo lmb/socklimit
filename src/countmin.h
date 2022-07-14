@@ -52,18 +52,21 @@ struct countmin {
 };
 
 // add element and determine count
-static __u32 cm_add_and_query(struct countmin *cm, __u64 now, const struct cm_hash *h)
+static __u32 __attribute__ ((noinline)) cm_add_and_query(struct countmin *cm, __u64 now, const struct cm_hash *h)
 {
 	__u32 min = -1;
 #pragma clang loop unroll(full)
 	for (int i = 0; i < ARRAY_SIZE(cm->values); i++) {
 		__u32 target_idx       = h->values[i] & (ARRAY_SIZE(cm->values[i]) - 1);
 		struct cm_value *value = &cm->values[i][target_idx];
-		value->value           = estimate_rate(value->value, value->ts, now);
-		value->ts              = now;
-		if (value->value < min) {
-			min = value->value;
+		__u32 rate             = estimate_rate(value->value, value->ts, now);
+
+		if (rate < min) {
+			min = rate;
 		}
+
+		value->value = rate;
+		value->ts    = now;
 	}
 	return min;
 }

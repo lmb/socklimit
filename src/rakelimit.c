@@ -184,9 +184,11 @@ static FORCE_INLINE int load_ipv6(struct in6_addr *ip, struct __sk_buff *skb, __
 	return bpf_skb_load_bytes(skb, off, ip, sizeof(*ip));
 }
 
-static FORCE_INLINE int drop_or_accept(__u32 level, fpoint limit, __u32 max_rate, __u32 rand)
+static FORCE_INLINE int drop_or_accept(__u32 level, __u32 limit, __u32 max_rate, __u32 rand)
 {
-	if (div_by_int(to_fixed_point(limit, 0), max_rate) < to_fixed_point(0, rand)) {
+	__u32 ratio = q32_frac(q32_div_u32(q32_int(limit), max_rate));
+
+	if (ratio < rand) {
 		log_level_drop(level);
 		return SKB_REJECT;
 	}
@@ -335,53 +337,6 @@ SEC("socket/test_ipv6")
 int test_ipv6(struct __sk_buff *skb)
 {
 	return test_filter(skb, ETH_P_IPV6);
-}
-
-// test_fp_cmp takes the element with the index 0 out of the test_single_result map, and
-// compares if it is equal to some randomly chosen integer converted to a fixed-point (27 in this case).
-// Then we do the same thing the other way around and put a converted 19 into the map to ensure the userspace
-// implementation does its job as well
-SEC("socket/test1")
-int test_fp_cmp(struct __sk_buff *skb)
-{
-	int i     = 0;
-	__u64 *fp = bpf_map_lookup_elem(&test_single_result, &i);
-	if (fp == NULL) {
-		return __LINE__;
-	}
-	// first check the value from userside
-	if (to_fixed_point(27, 0) != *fp) {
-		return __LINE__;
-	}
-	// then replace it
-	*fp = to_fixed_point(19, 0);
-	bpf_map_update_elem(&test_single_result, &i, fp, 0);
-	return 0;
-}
-
-// test_ewma takes a previous rate from index 0 (as a u32) and an old and
-// new timestamp from index 1-2 (as u64) and estimates the current rate.
-// The result is written to the previous rate.
-SEC("socket/test2")
-int test_ewma(struct __sk_buff *skb)
-{
-	__u64 *old_rate = bpf_map_lookup_elem(&test_single_result, &(__u32){0});
-	if (old_rate == NULL) {
-		return SKB_REJECT;
-	}
-
-	__u64 *old_ts = bpf_map_lookup_elem(&test_single_result, &(__u32){1});
-	if (old_ts == NULL) {
-		return SKB_REJECT;
-	}
-
-	__u64 *now = bpf_map_lookup_elem(&test_single_result, &(__u32){2});
-	if (now == NULL) {
-		return SKB_REJECT;
-	}
-
-	*old_rate = estimate_rate(*old_rate, *old_ts, *now);
-	return SKB_PASS;
 }
 
 char __license[] SEC("license") = "Dual BSD/GPL";

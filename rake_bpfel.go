@@ -56,8 +56,6 @@ type rakeSpecs struct {
 type rakeProgramSpecs struct {
 	FilterIpv4 *ebpf.ProgramSpec `ebpf:"filter_ipv4"`
 	FilterIpv6 *ebpf.ProgramSpec `ebpf:"filter_ipv6"`
-	TestEwma   *ebpf.ProgramSpec `ebpf:"test_ewma"`
-	TestFpCmp  *ebpf.ProgramSpec `ebpf:"test_fp_cmp"`
 	TestIpv4   *ebpf.ProgramSpec `ebpf:"test_ipv4"`
 	TestIpv6   *ebpf.ProgramSpec `ebpf:"test_ipv6"`
 }
@@ -109,8 +107,6 @@ func (m *rakeMaps) Close() error {
 type rakePrograms struct {
 	FilterIpv4 *ebpf.Program `ebpf:"filter_ipv4"`
 	FilterIpv6 *ebpf.Program `ebpf:"filter_ipv6"`
-	TestEwma   *ebpf.Program `ebpf:"test_ewma"`
-	TestFpCmp  *ebpf.Program `ebpf:"test_fp_cmp"`
 	TestIpv4   *ebpf.Program `ebpf:"test_ipv4"`
 	TestIpv6   *ebpf.Program `ebpf:"test_ipv6"`
 }
@@ -119,8 +115,6 @@ func (p *rakePrograms) Close() error {
 	return _RakeClose(
 		p.FilterIpv4,
 		p.FilterIpv6,
-		p.TestEwma,
-		p.TestFpCmp,
 		p.TestIpv4,
 		p.TestIpv6,
 	)
