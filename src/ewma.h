@@ -24,6 +24,8 @@ static __u32 __attribute__ ((noinline)) estimate_rate(__u32 old_rate, __u64 old_
 	//    alpha = (0.50 / 2^-32) + 1
 	const __u32 alpha = 2147483649u;
 
+	// IDEA: Reserve ts == 0 as a special value to detect uninitialised counter?
+
 	if (old_ts >= now) {
 		// Time went backward due to clockskew or timer overflow. Return the old
 		// value since we can't compute the current rate.
